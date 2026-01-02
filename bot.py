@@ -1,33 +1,35 @@
+import os
+import asyncio
 import logging
-from aiogram import Bot, Dispatcher, executor, types
 
-API_TOKEN = "8201583179:AAG5BWDQnlkejm_WFtY-LFGkSlVl4xuDdOQ"
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, CallbackQuery
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+API_TOKEN = os.getenv("API_TOKEN")
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
-
 
 def main_keyboard():
-    return types.InlineKeyboardMarkup(row_width=1).add(
-        types.InlineKeyboardButton(
-            text="🔧 Панель управления",
-            url="https://t.me/gammaVPN_bot?start=from_vps"
-        ),
-        types.InlineKeyboardButton(
-            text="💳 Тарифы VPS",
-            callback_data="prices"
-        ),
-        types.InlineKeyboardButton(
-            text="🆘 Поддержка",
-            callback_data="support"
-        )
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text="🔧 Панель управления",
+        url="https://t.me/gammaVPN_bot?start=from_vps"
     )
+    kb.button(
+        text="💳 Тарифы VPS",
+        callback_data="prices"
+    )
+    kb.button(
+        text="🆘 Поддержка",
+        callback_data="support"
+    )
+    kb.adjust(1)
+    return kb.as_markup()
 
 
-@dp.message_handler(commands=["start"])
-async def start_handler(message: types.Message):
+async def start_handler(message: Message):
     text = (
         "Добро пожаловать в *GaMMa VPS* 👋\n\n"
         "Мы предоставляем виртуальные серверы для:\n"
@@ -44,8 +46,7 @@ async def start_handler(message: types.Message):
     )
 
 
-@dp.callback_query_handler(lambda c: c.data == "prices")
-async def prices_handler(callback: types.CallbackQuery):
+async def prices_handler(callback: CallbackQuery):
     await callback.message.answer(
         "*Тарифы VPS*\n\n"
         "• Start — 1 vCPU / 1 GB RAM\n"
@@ -56,13 +57,26 @@ async def prices_handler(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@dp.callback_query_handler(lambda c: c.data == "support")
-async def support_handler(callback: types.CallbackQuery):
+async def support_handler(callback: CallbackQuery):
     await callback.message.answer(
         "Поддержка:\n@gamma_support"
     )
     await callback.answer()
 
 
+async def main():
+    if not API_TOKEN:
+        raise RuntimeError("API_TOKEN not set")
+
+    bot = Bot(token=API_TOKEN)
+    dp = Dispatcher()
+
+    dp.message.register(start_handler, F.text == "/start")
+    dp.callback_query.register(prices_handler, F.data == "prices")
+    dp.callback_query.register(support_handler, F.data == "support")
+
+    await dp.start_polling(bot)
+
+
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(main())
