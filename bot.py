@@ -33,7 +33,7 @@ async def start_handler(message: Message):
     text = (
         "Добро пожаловать в *GaMMa VPS* 👋\n\n"
         "Мы предоставляем виртуальные серверы для:\n"
-        "• хостинга проектов\n"
+        "• Безопастности в интернете\n"
         "• личных сервисов\n"
         "• сетевых решений\n\n"
         "Управление услугами и доступами осуществляется "
@@ -59,7 +59,7 @@ async def prices_handler(callback: CallbackQuery):
 
 async def support_handler(callback: CallbackQuery):
     await callback.message.answer(
-        "Поддержка:\n@gamma_support"
+        "Поддержка:\n@GaMMa_help"
     )
     await callback.answer()
 
@@ -80,3 +80,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
